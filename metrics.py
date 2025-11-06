@@ -96,8 +96,8 @@ def summarize_evaluation(
     predictions,
     labels,
     model_name="Model",
-    num_classes=None,
-    class_names=None
+    num_classes=6,
+    class_names=["sadness", "joy", "love", "anger", "fear", "surprise"]
 ):
     """
       Accuracy
