@@ -15,13 +15,16 @@ def print_model_params(model):
 
 
 
-def get_model_size(model):
-    """Calculates model size in megabytes (MB)."""
-    tmp_path = "temp_model.p"
-    torch.save(model.state_dict(), tmp_path)
-    size_mb = os.path.getsize(tmp_path) / (1024 * 1024)
-    os.remove(tmp_path)
-    return size_mb
+def model_size_in_MB(model):
+  param_size = 0
+  for param in model.parameters():
+      param_size += param.nelement() * param.element_size()
+  buffer_size = 0
+  for buffer in model.buffers():
+      buffer_size += buffer.nelement() * buffer.element_size()
+
+  size_all_mb = (param_size + buffer_size) / 1024**2
+  print('model size: {:.3f}MB'.format(size_all_mb))
 
 def measure_latency(model, dataset, num_samples=100):
     model.eval()
@@ -88,7 +91,19 @@ def acc_f1(eval_pred):
     return {"accuracy": acc["accuracy"], "macro_f1": f1["f1"]}
 
 
-
+def print_trainable_parameters(model):
+    """
+    Prints the number of trainable parameters in the model.
+    """
+    trainable_params = 0
+    all_param = 0
+    for _, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+    print(
+        f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param:.2f}"
+    )
 
 def summarize_evaluation(
     model,
@@ -109,18 +124,18 @@ def summarize_evaluation(
       Inference latency (ms/sample)
     """
     print(f"\n{model_name} Evaluation Summary\n{'='*60}")
-
+    print_trainable_parameters(model)
     metrics = compute_classification_metrics(predictions, labels, num_classes)
-    model_size = get_model_size(model)
+    model_size_in_MB(model)
     latency = measure_latency(model, dataset)
 
     print(f"Accuracy:       {metrics['accuracy']:.4f}")
     print(f"Macro F1:       {metrics['macro_f1']:.4f}")
-    print(f"Model Size:     {model_size:.2f} MB")
+    # print(f"Model Size:     {model_size:.2f} MB")
     print(f"Latency:        {latency:.2f} ms/sample\n")
 
-    print(" Classification Report:")
-    print(classification_report(labels, predictions, target_names=class_names, digits=3))
+    # print(" Classification Report:")
+    # print(classification_report(labels, predictions, target_names=class_names, digits=3))
 
     print("Per-Class F1 Scores:")
     for i, f1_score in enumerate(metrics["per_class_f1"]):
@@ -149,6 +164,6 @@ def summarize_evaluation(
         "macro_f1": metrics["macro_f1"],
         "per_class_f1": metrics["per_class_f1"],
         "confusion_matrix": metrics["confusion_matrix"],
-        "model_size_mb": model_size,
+        # "model_size_mb": model_size,
         "latency_ms": latency,
     }
