@@ -2,6 +2,9 @@
 
 Assignment 2 for Advanced NLP. Involves fine-tuning and quantization for multi-class classification.
 
+## Pretrained weights:
+Stored in drive due to its' size being > 25MB
+[https://drive.google.com/drive/folders/1176dlKl5ZOiFk4ahkHex4pc5lEROz4YZ?usp=sharing](https://drive.google.com/drive/folders/1176dlKl5ZOiFk4ahkHex4pc5lEROz4YZ?usp=sharing)
 
 File Directories:
 ./training_scripts directory: Includes script for finetuning, PTQ, QAT and QLoRA.
